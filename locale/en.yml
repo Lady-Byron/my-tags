@@ -6,4 +6,5 @@ acpl-my-tags:
   forum:
     index:
       my_tags: "My tags"
+      hidden_tags: "Hidden (Blocked) tags"
       placeholder: "You are not following any tags yet. <a>See tags</a>"
