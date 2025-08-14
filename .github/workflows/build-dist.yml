@@ -21,28 +21,26 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'yarn'
+          node-version: '20'   # 或 18，看 package.json engines
 
-      # 关键：使用 yarn，并严格按 yarn.lock 安装，避免拉到不兼容的新依赖（如 TS 5.5）
-      - name: Install deps (yarn, locked)
-        run: yarn install --frozen-lockfile
+      # 用 npm 安装；有 package-lock.json 就用 ci，没有就普通 install
+      - name: Install deps
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm i
+          fi
 
-      # 自动修复格式，再跑检查（检查失败也不阻塞，可按需去掉 || true）
+      # 自动修复格式（不阻塞）
       - name: Format (fix)
-        run: yarn run format-fix || true
+        run: npm run format-fix || true
 
-      - name: Format (check)
-        run: yarn run format-check || true
-
-      # 某些仓库包含 typings 构建；没有也不会失败
-      - name: Build typings
-        run: yarn run build-typings || true
-
+      # 直接构建产物
       - name: Build JS bundle
-        run: yarn run build
+        run: npm run build
 
-      # 回推打包产物，Flarum 生产环境需要 js/dist
+      # 提交 js/dist（Flarum 生产会用这个目录）
       - name: Commit dist
         uses: EndBug/add-and-commit@v9
         with:
