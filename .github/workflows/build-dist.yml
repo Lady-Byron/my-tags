@@ -1,17 +1,32 @@
 name: Checks & Production Build
+
 on:
   push:
-    branches: [ master, main, feat/hidden-group ]
+    branches:
+      - master
+      - main
+      - feat/hidden-group
+
 permissions:
   contents: write
+
+defaults:
+  run:
+    working-directory: js   # ← 以后所有 run 都在 js/ 下执行
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      # 安装依赖（优先用 lock）
       - name: Install deps
         run: |
           if [ -f package-lock.json ]; then
@@ -19,10 +34,12 @@ jobs:
           else
             npm i
           fi
-      - name: Format (fix)
-        run: npm run format-fix || true
-      - name: Build JS bundle
+
+      # 生产构建
+      - name: Build
         run: npm run build
+
+      # 回推打包产物（路径相对仓库根目录）
       - name: Commit dist
         uses: EndBug/add-and-commit@v9
         with:
